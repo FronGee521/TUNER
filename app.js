@@ -42,33 +42,60 @@
   function setStatus(active,text){$("statusDot").parentElement.classList.toggle("active",active);$("statusText").textContent=text;}
   function setHint(s){$("hint").textContent=s;}
   function autoCorrelate(buf,sampleRate){
-    // Normalized autocorrelation with RMS gate; searches guitar fundamentals, not just loud harmonics.
-    let rms=0; for(let i=0;i<buf.length;i++)rms+=buf[i]*buf[i]; rms=Math.sqrt(rms/buf.length);
-    if(rms<0.008)return null;
-    let bestOffset=-1,bestCorr=0,prev=1,found=false;
-    const minLag=Math.floor(sampleRate/420),maxLag=Math.min(Math.floor(sampleRate/55),buf.length-2);
-    const correlations=new Float32Array(maxLag+1);
-    for(let lag=minLag;lag<=maxLag;lag++){
-      let corr=0;
-      for(let i=0;i<buf.length-lag;i++)corr+=buf[i]*buf[i+lag];
-      corr/=buf.length-lag; correlations[lag]=corr;
-      if(corr>0.01 && corr>prev){found=true;} 
-      if(found && corr<prev){const candidate=lag-1;if(correlations[candidate]>bestCorr){bestCorr=correlations[candidate];bestOffset=candidate;}found=false;}
-      prev=corr;
+    let mean=0;
+    for(let i=0;i<buf.length;i++) mean+=buf[i];
+    mean/=buf.length;
+    let rms=0;
+    for(let i=0;i<buf.length;i++){const v=buf[i]-mean;rms+=v*v;}
+    rms=Math.sqrt(rms/buf.length);
+    if(rms<0.006)return null;
+
+    const minLag=Math.max(2,Math.floor(sampleRate/420));
+    const maxLag=Math.min(Math.floor(sampleRate/65),Math.floor(buf.length/2));
+    const diff=new Float32Array(maxLag+1);
+    for(let lag=1;lag<=maxLag;lag++){
+      let sum=0;
+      for(let i=0;i<buf.length-maxLag;i++){
+        const a=buf[i]-mean,b=buf[i+lag]-mean;
+        sum+=(a-b)*(a-b);
+      }
+      diff[lag]=sum;
     }
-    if(bestOffset<0||bestCorr<0.01)return null;
-    // Parabolic interpolation around the correlation peak.
-    const y1=correlations[bestOffset-1]||0,y2=correlations[bestOffset],y3=correlations[bestOffset+1]||0;
-    const denom=y1-2*y2+y3;
-    const shift=denom?0.5*(y1-y3)/denom:0;
-    const lag=bestOffset+shift;
-    const freq=sampleRate/lag;
-    return freq>=45&&freq<=1000?{freq,confidence:Math.min(1,bestCorr/(rms*rms+1e-9))}:null;
+    let running=0;
+    const cmnd=new Float32Array(maxLag+1);
+    cmnd[0]=1;
+    for(let lag=1;lag<=maxLag;lag++){
+      running+=diff[lag];
+      cmnd[lag]=running===0?1:diff[lag]*lag/running;
+    }
+    let tau=-1;
+    for(let lag=minLag;lag<=maxLag;lag++){
+      if(cmnd[lag]<0.16){
+        while(lag+1<=maxLag&&cmnd[lag+1]<cmnd[lag])lag++;
+        tau=lag;break;
+      }
+    }
+    if(tau<0){
+      let best=1;
+      for(let lag=minLag;lag<=maxLag;lag++)if(cmnd[lag]<best){best=cmnd[lag];tau=lag;}
+      if(best>0.32)return null;
+    }
+    const y0=cmnd[tau-1]||cmnd[tau],y1=cmnd[tau],y2=cmnd[tau+1]||cmnd[tau];
+    const denom=2*(2*y1-y2-y0);
+    const shift=denom?(y2-y0)/denom:0;
+    const freq=sampleRate/(tau+Math.max(-1,Math.min(1,shift)));
+    return freq>=60&&freq<=420&&1-cmnd[tau]>=0.55?{freq,confidence:1-cmnd[tau]}:null;
   }
   function pickTarget(midi){
     if(state.mode==="chromatic")return Math.round(midi);
-    const ts=targets();let best=ts[0],dist=Infinity;
-    for(const t of ts){const d=Math.abs(t.midi-midi);if(d<dist){dist=d;best=t;}}
+    const ts=targets();
+    let best=ts[0],bestIndex=0,dist=Infinity;
+    for(let i=0;i<ts.length;i++){
+      const d=Math.abs(1200*Math.log2(midiFreq(midi)/midiFreq(ts[i].midi)));
+      if(d<dist){dist=d;best=ts[i];bestIndex=i;}
+    }
+    state.selected=bestIndex;
+    document.querySelectorAll(".string-card").forEach((el,i)=>el.classList.toggle("selected",i===bestIndex));
     return best.midi;
   }
   function showPitch(freq){
@@ -88,6 +115,7 @@
     $("tuningAdvice").textContent=Math.abs(targetCents)<=2?"НАСТРОЕНО":targetCents<0?"НАТЯНУТЬ":"ОСЛАБИТЬ";
     $("signalLabel").textContent="СИГНАЛ ОБНАРУЖЕН";
   }
+  const pitchBuffer = null;
   function loop(){
     if(!state.running)return;
     const buf=new Float32Array(state.analyser.fftSize);state.analyser.getFloatTimeDomainData(buf);
@@ -109,7 +137,7 @@
       state.ctx=new (window.AudioContext||window.webkitAudioContext)();
       if(state.ctx.state==="suspended")await state.ctx.resume();
       state.source=state.ctx.createMediaStreamSource(state.stream);state.analyser=state.ctx.createAnalyser();
-      state.analyser.fftSize=8192;state.analyser.smoothingTimeConstant=0;
+      state.analyser.fftSize=4096;state.analyser.smoothingTimeConstant=0;
       state.source.connect(state.analyser);state.running=true;state.history=[];
       $("stopButton").disabled=false;$("micButton").textContent="Микрофон включён";
       setStatus(true,"МИКРОФОН АКТИВЕН");setHint("Сыграйте одну открытую струну и дайте ноте прозвучать.");
