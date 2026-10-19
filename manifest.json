@@ -1,6 +1,6 @@
 {
-  "name": "Guitar Tuner PWA",
-  "short_name": "Tuner",
+  "name": "Guitar Combo PWA",
+  "short_name": "GuitarCombo",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#121212",

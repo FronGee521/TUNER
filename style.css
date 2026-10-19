@@ -12,22 +12,75 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    overflow: hidden;
+    position: relative;
 }
 
-.tuner-container {
+/* Эффект свечения по краям экрана */
+.glow-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    box-shadow: inset 0 0 0px rgba(76, 175, 80, 0);
+    transition: box-shadow 0.2s ease-out;
+    z-index: 10;
+}
+
+.glow-overlay.active {
+    box-shadow: inset 0 0 60px rgba(76, 175, 80, 0.8), inset 0 0 20px rgba(76, 175, 80, 0.5);
+}
+
+.app-container {
     text-align: center;
-    padding: 2rem;
+    padding: 1.5rem;
     width: 100%;
     max-width: 400px;
+    z-index: 1;
+}
+
+/* Вкладки */
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 2rem;
+}
+
+.tab-btn {
+    background: #1e1e1e;
+    color: #888;
+    border: 1px solid #333;
+    padding: 0.6rem 1.2rem;
+    border-radius: 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab-btn.active {
+    background: #007aff;
+    color: #fff;
+    border-color: #007aff;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
 }
 
 h1 {
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem;
     color: #aaa;
 }
 
-#start-btn {
+.main-btn {
     background-color: #007aff;
     color: white;
     border: none;
@@ -36,37 +89,46 @@ h1 {
     border-radius: 30px;
     cursor: pointer;
     transition: background-color 0.2s;
+    margin-top: 1rem;
 }
 
-#start-btn:hover {
+.main-btn:hover {
     background-color: #0056b3;
 }
 
+/* Тюнер */
+.string-hint {
+    font-size: 1.1rem;
+    color: #007aff;
+    font-weight: 600;
+    min-height: 1.5rem;
+}
+
 .note {
-    font-size: 5rem;
+    font-size: 4.5rem;
     font-weight: bold;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.2rem;
     transition: color 0.2s;
 }
 
 .frequency {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     color: #888;
 }
 
 .cents {
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: #666;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .meter {
     position: relative;
-    width: 200px;
-    height: 100px;
+    width: 220px;
+    height: 110px;
     margin: 0 auto;
-    border-top-left-radius: 100px;
-    border-top-right-radius: 100px;
+    border-top-left-radius: 110px;
+    border-top-right-radius: 110px;
     border: 2px solid #333;
     border-bottom: none;
     overflow: hidden;
@@ -77,9 +139,82 @@ h1 {
     bottom: 0;
     left: 50%;
     width: 4px;
-    height: 90px;
+    height: 100px;
     background-color: #ff3b30;
     transform-origin: bottom center;
     transform: translateX(-50%) rotate(0deg);
-    transition: transform 0.1s ease-out;
+}
+
+/* Метроном */
+.bpm-display {
+    font-size: 4rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.bpm-display small {
+    font-size: 1.2rem;
+    color: #888;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 1.5rem;
+}
+
+.step-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #444;
+    background: #222;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+input[type="range"] {
+    width: 180px;
+}
+
+.time-sig {
+    margin-bottom: 1.5rem;
+    color: #aaa;
+}
+
+select {
+    background: #222;
+    color: #fff;
+    border: 1px solid #444;
+    padding: 0.4rem;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.dots-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+    min-height: 24px;
+}
+
+.dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #333;
+    transition: background 0.1s, transform 0.1s;
+}
+
+.dot.active {
+    background: #007aff;
+    transform: scale(1.2);
+}
+
+.dot.accent {
+    background: #ff9500;
 }

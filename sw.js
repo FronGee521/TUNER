@@ -1,6 +1,6 @@
 self.addEventListener('install', (e) => {
     e.waitUntil(
-        caches.open('tuner-v1').then((cache) => {
+        caches.open('guitar-combo-v2').then((cache) => {
             return cache.addAll(['./', './index.html', './style.css', './app.js', './manifest.json']);
         })
     );

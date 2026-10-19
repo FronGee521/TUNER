@@ -3,25 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Гитарный тюнер PWA</title>
+    <title>Guitar Combo PWA</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
     <meta name="theme-color" content="#121212">
 </head>
 <body>
-    <div class="tuner-container">
-        <h1>Гитарный тюнер</h1>
-        <button id="start-btn">Включить микрофон</button>
+    <div id="glow-overlay" class="glow-overlay"></div>
 
-        <div class="display" id="display" style="display: none;">
-            <div id="note" class="note">--</div>
-            <div id="frequency" class="frequency">0.0 Hz</div>
-            <div id="cents" class="cents">0 центов</div>
+    <div class="app-container">
+        <!-- Вкладки -->
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="tuner">Тюнер</button>
+            <button class="tab-btn" data-tab="metronome">Метроном</button>
+        </nav>
 
-            <div class="meter">
-                <div class="meter-needle" id="needle"></div>
+        <!-- ТЮНЕР -->
+        <main id="tuner-tab" class="tab-content active">
+            <h1>Гитарный тюнер</h1>
+            <button id="start-btn" class="main-btn">Включить микрофон</button>
+
+            <div class="display" id="display" style="display: none;">
+                <div id="string-hint" class="string-hint">--</div>
+                <div id="note" class="note">--</div>
+                <div id="frequency" class="frequency">0.0 Hz</div>
+                <div id="cents" class="cents">0 центов</div>
+
+                <div class="meter">
+                    <div class="meter-needle" id="needle"></div>
+                </div>
             </div>
-        </div>
+        </main>
+
+        <!-- МЕТРОНОМ -->
+        <main id="metronome-tab" class="tab-content">
+            <h1>Метроном</h1>
+            <div class="bpm-display">
+                <span id="bpm-val">120</span> <small>BPM</small>
+            </div>
+            
+            <div class="controls">
+                <button id="bpm-minus" class="step-btn">-</button>
+                <input type="range" id="bpm-slider" min="30" max="250" value="120">
+                <button id="bpm-plus" class="step-btn">+</button>
+            </div>
+
+            <div class="time-sig">
+                <label for="time-select">Размер: </label>
+                <select id="time-select">
+                    <option value="4">4/4</option>
+                    <option value="3">3/4</option>
+                    <option value="2">2/4</option>
+                    <option value="6">6/8</option>
+                </select>
+            </div>
+
+            <div id="dots-container" class="dots-container"></div>
+
+            <button id="metro-start-btn" class="main-btn">Старт</button>
+        </main>
     </div>
 
     <script src="app.js"></script>
