@@ -2,66 +2,144 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guitar Combo PWA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#17191c">
+    <meta name="description" content="Минималистичный гитарный тюнер и метроном.">
+    <title>Guitar Combo — Тюнер и метроном</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
-    <meta name="theme-color" content="#121212">
 </head>
 <body>
-    <div id="glow-overlay" class="glow-overlay"></div>
+    <div id="glow-overlay" class="glow-overlay" aria-hidden="true"></div>
 
     <div class="app-container">
-        <!-- Вкладки -->
-        <nav class="tabs">
-            <button class="tab-btn active" data-tab="tuner">Тюнер</button>
-            <button class="tab-btn" data-tab="metronome">Метроном</button>
+        <header class="app-header">
+            <div class="brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 40 40" fill="none">
+                    <path d="M24 7v20.5a5.2 5.2 0 1 1-2.7-4.6V12l12-2.7v15.1a5.2 5.2 0 1 1-2.7-4.6V6.2L24 7Z" fill="currentColor"/>
+                    <path d="M5 14h5M5 20h3M5 26h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".55"/>
+                </svg>
+            </div>
+            <div class="brand-copy">
+                <div class="brand-name">GUITAR <span>COMBO</span></div>
+                <div class="brand-caption">TOOLS FOR PLAYERS</div>
+            </div>
+            <div class="header-indicator" aria-hidden="true"><span></span> READY</div>
+        </header>
+
+        <nav class="tabs" aria-label="Инструменты">
+            <button class="tab-btn active" data-tab="tuner" type="button">Тюнер</button>
+            <button class="tab-btn" data-tab="metronome" type="button">Метроном</button>
         </nav>
 
-        <!-- ТЮНЕР -->
         <main id="tuner-tab" class="tab-content active">
-            <h1>Гитарный тюнер</h1>
-            <button id="start-btn" class="main-btn">Включить микрофон</button>
-
-            <div class="display" id="display" style="display: none;">
-                <div id="string-hint" class="string-hint">--</div>
-                <div id="note" class="note">--</div>
-                <div id="frequency" class="frequency">0.0 Hz</div>
-                <div id="cents" class="cents">0 центов</div>
-
-                <div class="meter">
-                    <div class="meter-needle" id="needle"></div>
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">01 / INSTRUMENT</p>
+                    <h1>Тюнер</h1>
                 </div>
+                <span class="section-note">STANDARD · E A D G B E</span>
             </div>
+
+            <section class="instrument-panel" aria-label="Настройка гитары">
+                <div class="panel-topline">
+                    <span class="panel-label">PITCH DETECTOR</span>
+                    <span class="panel-status"><span class="status-dot"></span> CHROMATIC</span>
+                </div>
+
+                <div class="tuner-readout">
+                    <div id="string-hint" class="string-hint">Ожидание сигнала</div>
+                    <div id="note" class="note">—</div>
+                    <div class="readout-meta">
+                        <span id="frequency" class="frequency">0.0 Hz</span>
+                        <span class="meta-divider"></span>
+                        <span id="cents" class="cents">0 центов</span>
+                    </div>
+                </div>
+
+                <div class="meter-wrap">
+                    <div class="meter-labels" aria-hidden="true">
+                        <span>−50</span><span>−25</span><span class="meter-center">0</span><span>+25</span><span>+50</span>
+                    </div>
+                    <div class="meter" aria-label="Шкала отклонения">
+                        <div class="meter-center-mark" aria-hidden="true"></div>
+                        <div class="meter-needle" id="needle"></div>
+                    </div>
+                    <div class="meter-caption"><span>FLAT</span><span>IN TUNE</span><span>SHARP</span></div>
+                </div>
+
+                <div class="panel-footer">
+                    <span>REFERENCE A4</span>
+                    <strong>440 <small>Hz</small></strong>
+                </div>
+            </section>
+
+            <button id="start-btn" class="main-btn" type="button">
+                <span class="button-icon" aria-hidden="true">↗</span>
+                Включить микрофон
+                <span class="button-arrow" aria-hidden="true">→</span>
+            </button>
+            <p class="helper-copy">Разреши доступ к микрофону и сыграй одну струну.</p>
         </main>
 
-        <!-- МЕТРОНОМ -->
         <main id="metronome-tab" class="tab-content">
-            <h1>Метроном</h1>
-            <div class="bpm-display">
-                <span id="bpm-val">120</span> <small>BPM</small>
-            </div>
-            
-            <div class="controls">
-                <button id="bpm-minus" class="step-btn">-</button>
-                <input type="range" id="bpm-slider" min="30" max="250" value="120">
-                <button id="bpm-plus" class="step-btn">+</button>
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">02 / TIMEKEEPER</p>
+                    <h1>Метроном</h1>
+                </div>
+                <span class="section-note">TEMPO CONTROL</span>
             </div>
 
-            <div class="time-sig">
-                <label for="time-select">Размер: </label>
-                <select id="time-select">
-                    <option value="4">4/4</option>
-                    <option value="3">3/4</option>
-                    <option value="2">2/4</option>
-                    <option value="6">6/8</option>
-                </select>
-            </div>
+            <section class="instrument-panel metronome-panel" aria-label="Настройки метронома">
+                <div class="panel-topline">
+                    <span class="panel-label">TEMPO</span>
+                    <span class="panel-status">BPM · QUARTER NOTE</span>
+                </div>
 
-            <div id="dots-container" class="dots-container"></div>
+                <div class="bpm-display">
+                    <span id="bpm-val">120</span>
+                    <small>BPM</small>
+                </div>
 
-            <button id="metro-start-btn" class="main-btn">Старт</button>
+                <div class="controls">
+                    <button id="bpm-minus" class="step-btn" type="button" aria-label="Уменьшить темп">−</button>
+                    <input type="range" id="bpm-slider" min="30" max="250" value="120" aria-label="Темп в ударах в минуту">
+                    <button id="bpm-plus" class="step-btn" type="button" aria-label="Увеличить темп">+</button>
+                </div>
+                <div class="range-labels"><span>30</span><span>140</span><span>250</span></div>
+
+                <div class="settings-row">
+                    <div>
+                        <span class="setting-title">Размер такта</span>
+                        <span class="setting-subtitle">BEATS PER BAR</span>
+                    </div>
+                    <select id="time-select" aria-label="Размер такта">
+                        <option value="4">4/4</option>
+                        <option value="3">3/4</option>
+                        <option value="2">2/4</option>
+                        <option value="6">6/8</option>
+                    </select>
+                </div>
+
+                <div class="beat-section">
+                    <div class="beat-heading"><span>ДОЛИ</span><span>ACCENT ON 1</span></div>
+                    <div id="dots-container" class="dots-container" aria-label="Индикатор долей"></div>
+                </div>
+            </section>
+
+            <button id="metro-start-btn" class="main-btn" type="button">
+                <span class="button-icon" aria-hidden="true">▶</span>
+                Старт
+                <span class="button-arrow" aria-hidden="true">→</span>
+            </button>
+            <p class="helper-copy">Выбери темп и размер такта перед началом.</p>
         </main>
+
+        <footer class="app-footer">
+            <span>G/C — 01</span>
+            <span>BUILT FOR PRACTICE</span>
+        </footer>
     </div>
 
     <script src="app.js"></script>
