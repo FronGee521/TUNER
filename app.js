@@ -1,163 +1,122 @@
-(() => {
-  "use strict";
-  const $ = id => document.getElementById(id);
-  const modes = {
-    standard: [{n:"E",o:2},{n:"A",o:2},{n:"D",o:3},{n:"G",o:3},{n:"B",o:3},{n:"E",o:4}],
-    dropd: [{n:"D",o:2},{n:"A",o:2},{n:"D",o:3},{n:"G",o:3},{n:"B",o:3},{n:"E",o:4}],
-    dropc: [{n:"C",o:2},{n:"G",o:2},{n:"C",o:3},{n:"F",o:3},{n:"A",o:3},{n:"D",o:4}],
-    dadgad: [{n:"D",o:2},{n:"A",o:2},{n:"D",o:3},{n:"G",o:3},{n:"A",o:3},{n:"D",o:4}],
-    openG: [{n:"D",o:2},{n:"G",o:2},{n:"D",o:3},{n:"G",o:3},{n:"B",o:3},{n:"D",o:4}]
-  };
-  const noteNames = ["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
-  const state = {ctx:null,stream:null,source:null,analyser:null,raf:0,cal:440,mode:"standard",selected:0,lastFreq:0,history:[],running:false};
-  const noteMidi = (n,o) => (o+1)*12+noteNames.indexOf(n);
-  const midiFreq = midi => state.cal * Math.pow(2,(midi-69)/12);
-  const freqMidi = f => 69+12*Math.log2(f/state.cal);
-  const fmt = (n,d=2) => Number(n).toFixed(d);
-  function targets(){
-    if(state.mode==="chromatic") return Array.from({length:49},(_,i)=>({midi:36+i,note:noteNames[(36+i)%12],oct:Math.floor((36+i)/12)-1}));
-    return modes[state.mode].map(s=>({midi:noteMidi(s.n,s.o),note:s.n,oct:s.o}));
-  }
-  function renderStrings(){
-    const root=$("strings"); root.innerHTML="";
-    if(state.mode==="chromatic"){
-      root.innerHTML='<div class="hint">Хроматический режим: цель выбирается автоматически по входящему сигналу.</div>';return;
-    }
-    targets().forEach((t,i)=>{
-      const b=document.createElement("button");b.className="string-card"+(i===state.selected?" selected":"");
-      b.innerHTML=`<span class="s-note">${t.note}</span><span class="s-name">СТРУНА ${6-i}</span><span class="s-hz">${fmt(midiFreq(t.midi),2)} Hz</span>`;
-      b.addEventListener("click",()=>{state.selected=i;renderStrings();updateTarget();});
-      root.appendChild(b);
-    });
-  }
-  function updateTarget(){
-    const list=targets(); const t=list[Math.min(state.selected,list.length-1)];
-    if(!t)return;
-    $("target").textContent=`${t.note}${t.oct} · ${fmt(midiFreq(t.midi),2)} Hz`;
-  }
-  function buildTicks(){
-    const root=$("ticks");
-    for(let i=0;i<=50;i++){const s=document.createElement("span");s.className="tick"+(i%5===0?" major":"")+(i===25?" zero":"");root.appendChild(s);}
-  }
-  function setStatus(active,text){$("statusDot").parentElement.classList.toggle("active",active);$("statusText").textContent=text;}
-  function setHint(s){$("hint").textContent=s;}
-  function autoCorrelate(buf,sampleRate){
-    let mean=0;
-    for(let i=0;i<buf.length;i++) mean+=buf[i];
-    mean/=buf.length;
-    let rms=0;
-    for(let i=0;i<buf.length;i++){const v=buf[i]-mean;rms+=v*v;}
-    rms=Math.sqrt(rms/buf.length);
-    if(rms<0.006)return null;
+const startBtn = document.getElementById('start-btn');
+const display = document.getElementById('display');
+const noteElem = document.getElementById('note');
+const freqElem = document.getElementById('frequency');
+const centsElem = document.getElementById('cents');
+const needle = document.getElementById('needle');
 
-    const minLag=Math.max(2,Math.floor(sampleRate/420));
-    const maxLag=Math.min(Math.floor(sampleRate/65),Math.floor(buf.length/2));
-    const diff=new Float32Array(maxLag+1);
-    for(let lag=1;lag<=maxLag;lag++){
-      let sum=0;
-      for(let i=0;i<buf.length-maxLag;i++){
-        const a=buf[i]-mean,b=buf[i+lag]-mean;
-        sum+=(a-b)*(a-b);
-      }
-      diff[lag]=sum;
+let audioContext = null;
+let analyser = null;
+let microphone = null;
+
+const noteStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+startBtn.addEventListener('click', async () => {
+    try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } 
+        });
+        
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
+
+        microphone = audioContext.createMediaStreamSource(stream);
+        microphone.connect(analyser);
+
+        startBtn.style.display = 'none';
+        display.style.display = 'block';
+
+        updatePitch();
+    } catch (err) {
+        alert('Ошибка доступа к микрофону: ' + err.message);
     }
-    let running=0;
-    const cmnd=new Float32Array(maxLag+1);
-    cmnd[0]=1;
-    for(let lag=1;lag<=maxLag;lag++){
-      running+=diff[lag];
-      cmnd[lag]=running===0?1:diff[lag]*lag/running;
+});
+
+function autoCorrelate(buf, sampleRate) {
+    let SIZE = buf.length;
+    let sumOfSquares = 0;
+    for (let i = 0; i < SIZE; i++) {
+        sumOfSquares += buf[i] * buf[i];
     }
-    let tau=-1;
-    for(let lag=minLag;lag<=maxLag;lag++){
-      if(cmnd[lag]<0.16){
-        while(lag+1<=maxLag&&cmnd[lag+1]<cmnd[lag])lag++;
-        tau=lag;break;
-      }
+    let rootMeanSquare = Math.sqrt(sumOfSquares / SIZE);
+    if (rootMeanSquare < 0.01) return -1;
+
+    let r1 = 0, r2 = SIZE - 1;
+    let threshold = 0.2;
+    for (let i = 0; i < SIZE / 2; i++) {
+        if (Math.abs(buf[i]) < threshold) { r1 = i; break; }
     }
-    if(tau<0){
-      let best=1;
-      for(let lag=minLag;lag<=maxLag;lag++)if(cmnd[lag]<best){best=cmnd[lag];tau=lag;}
-      if(best>0.32)return null;
+    for (let i = 1; i < SIZE / 2; i++) {
+        if (Math.abs(buf[SIZE - i]) < threshold) { r2 = SIZE - i; break; }
     }
-    const y0=cmnd[tau-1]||cmnd[tau],y1=cmnd[tau],y2=cmnd[tau+1]||cmnd[tau];
-    const denom=2*(2*y1-y2-y0);
-    const shift=denom?(y2-y0)/denom:0;
-    const freq=sampleRate/(tau+Math.max(-1,Math.min(1,shift)));
-    return freq>=60&&freq<=420&&1-cmnd[tau]>=0.55?{freq,confidence:1-cmnd[tau]}:null;
-  }
-  function pickTarget(midi){
-    if(state.mode==="chromatic")return Math.round(midi);
-    const ts=targets();
-    let best=ts[0],bestIndex=0,dist=Infinity;
-    for(let i=0;i<ts.length;i++){
-      const d=Math.abs(1200*Math.log2(midiFreq(midi)/midiFreq(ts[i].midi)));
-      if(d<dist){dist=d;best=ts[i];bestIndex=i;}
+
+    buf = buf.slice(r1, r2);
+    SIZE = buf.length;
+
+    let c = new Array(SIZE).fill(0);
+    for (let i = 0; i < SIZE; i++) {
+        for (let j = 0; j < SIZE - i; j++) {
+            c[i] = c[i] + buf[j] * buf[j + i];
+        }
     }
-    state.selected=bestIndex;
-    document.querySelectorAll(".string-card").forEach((el,i)=>el.classList.toggle("selected",i===bestIndex));
-    return best.midi;
-  }
-  function showPitch(freq){
-    const rawMidi=freqMidi(freq);const rounded=Math.round(rawMidi);const cents=(rawMidi-rounded)*100;
-    const note=noteNames[(rounded%12+12)%12],oct=Math.floor(rounded/12)-1;
-    const targetMidi=pickTarget(rawMidi),targetFreq=midiFreq(targetMidi);
-    const targetCents=1200*Math.log2(freq/targetFreq);
-    const displayedCents=Math.max(-50,Math.min(50,targetCents));
-    $("note").textContent=note+oct;
-    $("noteDetail").textContent=Math.abs(targetCents)<=2?"В строе":targetCents<0?"Ниже целевой ноты":"Выше целевой ноты";
-    $("frequency").innerHTML=`${fmt(freq,2)} <small>Hz</small>`;
-    $("cents").innerHTML=`${targetCents>0?"+":""}${fmt(targetCents,1)} <small>cents</small>`;
-    $("needle").style.left=`${50+displayedCents}%`;
-    $("needle").style.background=Math.abs(targetCents)<=2?"#c5d7bd":"#d5d9d1";
-    const tn=noteNames[(targetMidi%12+12)%12],to=Math.floor(targetMidi/12)-1;
-    $("target").textContent=`${tn}${to} · ${fmt(targetFreq,2)} Hz`;
-    $("tuningAdvice").textContent=Math.abs(targetCents)<=2?"НАСТРОЕНО":targetCents<0?"НАТЯНУТЬ":"ОСЛАБИТЬ";
-    $("signalLabel").textContent="СИГНАЛ ОБНАРУЖЕН";
-  }
-  const pitchBuffer = null;
-  function loop(){
-    if(!state.running)return;
-    const buf=new Float32Array(state.analyser.fftSize);state.analyser.getFloatTimeDomainData(buf);
-    const result=autoCorrelate(buf,state.ctx.sampleRate);
-    if(result){
-      state.history.push(result.freq);if(state.history.length>5)state.history.shift();
-      const sorted=[...state.history].sort((a,b)=>a-b),freq=sorted[Math.floor(sorted.length/2)];
-      state.lastFreq=freq;showPitch(freq);
-    }else{
-      $("signalLabel").textContent="ОЖИДАНИЕ НОТЫ";
+
+    let d = 0;
+    while (c[d] > c[d + 1]) d++;
+    let maxval = -1, maxpos = -1;
+    for (let i = d; i < SIZE; i++) {
+        if (c[i] > maxval) {
+            maxval = c[i];
+            maxpos = i;
+        }
     }
-    state.raf=requestAnimationFrame(loop);
-  }
-  async function start(){
-    if(!navigator.mediaDevices?.getUserMedia){setHint("Браузер не поддерживает микрофон. Откройте сайт через HTTPS или localhost.");return;}
-    try{
-      $("micButton").disabled=true;setHint("Запрашиваем доступ к микрофону…");
-      state.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:false});
-      state.ctx=new (window.AudioContext||window.webkitAudioContext)();
-      if(state.ctx.state==="suspended")await state.ctx.resume();
-      state.source=state.ctx.createMediaStreamSource(state.stream);state.analyser=state.ctx.createAnalyser();
-      state.analyser.fftSize=4096;state.analyser.smoothingTimeConstant=0;
-      state.source.connect(state.analyser);state.running=true;state.history=[];
-      $("stopButton").disabled=false;$("micButton").textContent="Микрофон включён";
-      setStatus(true,"МИКРОФОН АКТИВЕН");setHint("Сыграйте одну открытую струну и дайте ноте прозвучать.");
-      loop();
-    }catch(err){
-      $("micButton").disabled=false;setStatus(false,"НЕТ ДОСТУПА");
-      setHint(err.name==="NotAllowedError"?"Доступ к микрофону запрещён. Разрешите его в настройках браузера.":"Не удалось запустить микрофон. Проверьте подключение и разрешения.");
+    let T0 = maxpos;
+
+    let x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
+    let a = (x1 + x3 - 2 * x2) / 2;
+    let b = (x3 - x1) / 2;
+    if (a) T0 = T0 - b / (2 * a);
+
+    return sampleRate / T0;
+}
+
+function noteFromPitch(frequency) {
+    let noteNum = 12 * (Math.log(frequency / 440) / Math.log(2));
+    return Math.round(noteNum) + 69;
+}
+
+function frequencyFromNoteNumber(note) {
+    return 440 * Math.pow(2, (note - 69) / 12);
+}
+
+function centsOffFromPitch(frequency, note) {
+    return Math.floor(1200 * Math.log(frequency / frequencyFromNoteNumber(note)) / Math.log(2));
+}
+
+function updatePitch() {
+    let buffer = new Float32Array(analyser.fftSize);
+    analyser.getFloatTimeDomainData(buffer);
+    let pitch = autoCorrelate(buffer, audioContext.sampleRate);
+
+    if (pitch !== -1) {
+        let note = noteFromPitch(pitch);
+        let noteName = noteStrings[note % 12];
+        let octave = Math.floor(note / 12) - 1;
+        let cents = centsOffFromPitch(pitch, note);
+
+        noteElem.textContent = `${noteName}${octave}`;
+        freqElem.textContent = `${pitch.toFixed(1)} Hz`;
+        centsElem.textContent = `${cents > 0 ? '+' : ''}${cents} центов`;
+
+        let needlePos = Math.max(-50, Math.min(50, cents));
+        needle.style.transform = `translateX(-50%) rotate(${needlePos * 1.5}deg)`;
+
+        if (Math.abs(cents) < 3) {
+            noteElem.style.color = '#4caf50';
+        } else {
+            noteElem.style.color = '#fff';
+        }
     }
-  }
-  async function stop(){
-    state.running=false;cancelAnimationFrame(state.raf);
-    if(state.stream)state.stream.getTracks().forEach(t=>t.stop());
-    if(state.ctx)await state.ctx.close();
-    state.ctx=state.stream=state.source=state.analyser=null;state.history=[];
-    $("micButton").disabled=false;$("micButton").innerHTML='<span class="mic-icon">◉</span> Включить микрофон';$("stopButton").disabled=true;
-    setStatus(false,"ГОТОВ");$("signalLabel").textContent="ОЖИДАНИЕ МИКРОФОНА";setHint("Микрофон выключен.");$("note").textContent="—";$("noteDetail").textContent="Сыграйте одну струну";$("frequency").innerHTML='— <small>Hz</small>';$("cents").innerHTML='— <small>cents</small>';$("needle").style.left="50%";$("tuningAdvice").textContent="—";
-    updateTarget();
-  }
-  $("mode").addEventListener("change",e=>{state.mode=e.target.value;state.selected=0;renderStrings();updateTarget();});
-  $("calibration").addEventListener("input",e=>{state.cal=Number(e.target.value);$("calValue").textContent=state.cal+" Hz";renderStrings();updateTarget();});
-  $("micButton").addEventListener("click",start);$("stopButton").addEventListener("click",stop);
-  buildTicks();renderStrings();updateTarget();
-})();
+
+    requestAnimationFrame(updatePitch);
+}

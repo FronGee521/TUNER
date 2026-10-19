@@ -1,83 +1,34 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#171918">
-  <title>FRET LAB — Guitar Tuner</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Гитарный тюнер PWA</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <meta name="theme-color" content="#121212">
 </head>
 <body>
-  <main class="app">
-    <header class="topbar">
-      <a class="brand" href="#" aria-label="FRET LAB">FRET<span>/</span>LAB</a>
-      <span class="status"><i id="statusDot"></i><span id="statusText">ГОТОВ</span></span>
-    </header>
+    <div class="tuner-container">
+        <h1>Гитарный тюнер</h1>
+        <button id="start-btn">Включить микрофон</button>
 
-    <section class="controls" aria-label="Настройки тюнера">
-      <label class="control">
-        <span>РЕЖИМ</span>
-        <select id="mode">
-          <option value="standard">Standard · E A D G B E</option>
-          <option value="dropd">Drop D · D A D G B E</option>
-          <option value="dropc">Drop C · C G C F A D</option>
-          <option value="dadgad">DADGAD · D A D G A D</option>
-          <option value="openG">Open G · D G D G B D</option>
-          <option value="chromatic">Chromatic · все ноты</option>
-        </select>
-      </label>
-      <label class="control calibration">
-        <span>КАЛИБРОВКА A4</span>
-        <div class="cal-row">
-          <input id="calibration" type="range" min="432" max="446" value="440" step="1">
-          <output id="calValue">440 Hz</output>
+        <div class="display" id="display" style="display: none;">
+            <div id="note" class="note">--</div>
+            <div id="frequency" class="frequency">0.0 Hz</div>
+            <div id="cents" class="cents">0 центов</div>
+
+            <div class="meter">
+                <div class="meter-needle" id="needle"></div>
+            </div>
         </div>
-      </label>
-    </section>
+    </div>
 
-    <section class="tuner panel">
-      <div class="panel-heading">
-        <span>ВХОДЯЩИЙ СИГНАЛ</span>
-        <span id="signalLabel">ОЖИДАНИЕ МИКРОФОНА</span>
-      </div>
-      <div class="meter" aria-label="Индикатор отклонения в центах">
-        <div class="meter-track"></div>
-        <div class="meter-ticks" id="ticks"></div>
-        <div class="meter-center"></div>
-        <div class="needle" id="needle"></div>
-      </div>
-      <div class="scale-labels"><span>−50 ¢</span><span>−25 ¢</span><span>0</span><span>+25 ¢</span><span>+50 ¢</span></div>
-
-      <div class="note-readout">
-        <div class="note-block">
-          <div class="note" id="note">—</div>
-          <div class="subnote" id="noteDetail">Сыграйте одну струну</div>
-        </div>
-        <div class="metrics">
-          <div><span>ЧАСТОТА</span><strong id="frequency">— <small>Hz</small></strong></div>
-          <div><span>ОТКЛОНЕНИЕ</span><strong id="cents">— <small>cents</small></strong></div>
-        </div>
-      </div>
-
-      <div class="target-row">
-        <span>ЦЕЛЕВАЯ НОТА</span>
-        <strong id="target">E2 · 82.41 Hz</strong>
-        <span id="tuningAdvice">—</span>
-      </div>
-      <div class="actions">
-        <button id="micButton" class="primary"><span class="mic-icon">◉</span> Включить микрофон</button>
-        <button id="stopButton" class="secondary" disabled>Остановить</button>
-      </div>
-      <p class="hint" id="hint">Разрешите доступ к микрофону. Лучше всего работает в тихом помещении.</p>
-    </section>
-
-    <section class="strings-section">
-      <div class="section-title"><span>СТРУНЫ</span><span id="stringHint">ВЫБЕРИТЕ ДЛЯ РУЧНОЙ НАСТРОЙКИ</span></div>
-      <div class="strings" id="strings"></div>
-    </section>
-
-    <footer><span>FRET/LAB</span><span>MIC INPUT · CHROMATIC ANALYSIS</span></footer>
-  </main>
-  <script src="app.js"></script>
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
 </body>
 </html>
