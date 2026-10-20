@@ -18,7 +18,7 @@
   <header class="app-header">
     <div class="brand-mark" aria-label="tuner.metronom"><img src="./icons/icon-192.png" alt=""></div>
     <div class="brand-copy"><div class="brand-title">tuner.metronom</div></div>
-    <button class="icon-btn" id="settings-open">Настройки</button>
+    <button class="icon-btn" id="settings-open" aria-label="Настройки" title="Настройки"><span data-icon="settings"></span></button>
   </header>
 
 
@@ -83,7 +83,6 @@
     <section class="settings-group"><h2 data-i18n="general">Общие</h2>
       <button class="setting-row" data-setting="language"><span class="setting-icon" data-icon="language"></span><span data-i18n="language">Язык</span><strong id="language-value">Русский</strong><b>›</b></button>
       <button class="setting-row" data-setting="notation"><span class="setting-icon" data-icon="music"></span><span data-i18n="notation">Обозначение нот</span><strong id="notation-value">Латиница</strong><b>›</b></button>
-      <button class="setting-row" data-setting="accidentals"><span class="setting-icon" data-icon="flat"></span><span data-i18n="accidentals">Альтерации</span><strong id="accidentals-value">Диезы</strong><b>›</b></button>
       <button class="setting-row" data-setting="reference"><span class="setting-icon" data-icon="tuning-fork"></span><span data-i18n="referencePitch">Эталон A4</span><strong id="setting-ref-value">440 Hz</strong><b>›</b></button>
       <button class="setting-row" data-setting="theme"><span class="setting-icon" data-icon="sun-moon"></span><span data-i18n="theme">Тема</span><strong id="theme-value">Тёмная</strong><b>›</b></button>
     </section>
@@ -101,7 +100,7 @@
 
   <div id="subview" class="subview" aria-live="polite"><div class="subview-head"><button id="subview-back" class="back-btn"></button><h2 id="subview-title"></h2></div><div id="subview-options" class="subview-options"></div></div>
   <div id="toast" class="toast" role="status"></div>
-  <footer class="bottom-nav"><button class="nav-item active" data-screen="tuner"><span class="nav-icon" data-icon="gauge"></span><span data-i18n="tuner">Тюнер</span></button><button class="nav-item" data-screen="metronome"><span class="nav-icon" data-icon="metronome"></span><span data-i18n="metronome">Метроном</span></button><button class="nav-item" data-screen="settings"><span class="nav-icon" data-icon="sun-moon"></span><span data-i18n="settings">Настройки</span></button></footer>
+  <footer class="bottom-nav"><button class="nav-item active" data-screen="tuner"><span class="nav-icon" data-icon="gauge"></span><span data-i18n="tuner">Тюнер</span></button><button class="nav-item" data-screen="metronome"><span class="nav-icon" data-icon="metronome"></span><span data-i18n="metronome">Метроном</span></button></footer>
 </div>
 <script src="app.js"></script>
 <script>if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1')) addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(e=>console.warn('Service worker registration failed',e)));</script>

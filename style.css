@@ -5,7 +5,7 @@
 /* Refined controls and automatic tuning status */
 .brand-mark{display:none}
 .icon-btn{width:auto;padding:0 12px;font-size:11px;font-weight:600;color:#a9bac8}
-.segment svg,.nav-item svg,.setting-icon,.option-icon,.volume-row>svg,.volume-setting .setting-icon{display:none!important}
+.volume-setting .setting-icon{display:none!important}
 .segment{gap:0}
 .primary-btn{font-size:13px;letter-spacing:.1px}
 .strings button{transition:background .16s,border-color .16s,color .16s,box-shadow .16s}
@@ -39,3 +39,52 @@ body.light .custom-choice-panel{background:var(--surface);border-color:var(--lin
 @media(max-width:360px){.brand-title{font-size:16px}.string-tools-row{align-items:flex-start;flex-direction:column}.string-tools-row .secondary-btn{width:100%}}
 
 .nav-icon{display:grid;place-items:center;width:20px;height:20px}.nav-icon svg{width:19px;height:19px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+/* v4 corrective pass: visible SVGs, lighter gauge, coherent light theme */
+.icon-btn{padding:0;display:grid;place-items:center}
+.icon-btn [data-icon],.icon-btn svg{display:grid;width:20px;height:20px}
+.setting-icon,.option-icon,.nav-icon{display:grid;place-items:center;flex:0 0 auto}
+.setting-icon svg,.option-icon svg,.nav-icon svg{display:block;width:19px;height:19px;stroke:currentColor;stroke-width:1.65;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.nav-icon svg{width:20px;height:20px}
+.gauge-track{stroke-width:2.2;stroke:var(--line);opacity:.95}
+.gauge-arc{stroke-width:1.6;opacity:.95}
+.gauge-tick{stroke-width:.9;opacity:.78}
+.gauge-tick.major{stroke-width:1.25;opacity:.9}
+.gauge-tick.center{stroke-width:2.2}
+#needle{stroke-width:2.2}
+#settings-open{color:var(--text);border-color:var(--line);background:var(--surface2)}
+.bottom-nav{grid-template-columns:repeat(2,minmax(0,1fr))}
+/* Light mode surfaces use the same brand accent, but consistent readable neutrals. */
+body.light{background:var(--bg);color:var(--text)}
+body.light .tuner-panel,body.light .metro-panel,body.light .tuning-tools,body.light .metro-bottom,body.light .settings-group{background:var(--surface);border:1px solid var(--line);box-shadow:0 5px 18px #1c2c3b0a}
+body.light .gauge-track{stroke:#d6dfe6}
+body.light .gauge-tick{stroke:#8c9aa6}
+body.light .gauge-tick.major{stroke:#526371}
+body.light .gauge-labels text,#gauge-labels text{fill:var(--muted)}
+body.light .needle{stroke:#253847;filter:none}
+body.light .needle-hub{fill:#253847;stroke:#fff;stroke-width:2}
+body.light .section-label,body.light .live-dot,body.light .tool-heading,body.light .strings-heading span:last-child{color:var(--muted)}
+body.light .tool-heading strong,body.light .strings button b,body.light .setting-row,body.light .about-row{color:var(--text)}
+body.light .strings button,body.light .reference-choices button,body.light .tempo-presets button,body.light .option-card,body.light .beat-dots{background:var(--surface2);border-color:var(--line);color:var(--text)}
+body.light .strings button.selected{background:#e5f1f9;border-color:#7aaed1;color:#183b53}
+body.light .strings button.tuned{background:#e5f6ed;border-color:#64bd91;color:#176b46}
+body.light .strings button span,body.light .strings button small{color:var(--muted)}
+body.light .primary-btn{color:#10202b}
+body.light .secondary-btn{background:var(--surface2);border-color:var(--line);color:var(--text)}
+body.light .setting-row{border-color:var(--line)}
+body.light .setting-row strong{color:var(--muted)}
+body.light .subview{background:var(--bg)}
+body.light .choice-row{background:var(--surface);border-color:var(--line);color:var(--text)}
+body.light .choice-row.selected{background:var(--surface2);border-color:var(--accent)}
+body.light .custom-choice-panel{background:var(--surface);border-color:var(--line)}
+body.light .custom-choice-panel button{background:var(--surface2);border-color:var(--line);color:var(--text)}
+body.light .custom-choice-panel button.selected{background:#e5f1f9;border-color:var(--accent);color:#183b53}
+body.light .tempo-controls button{background:var(--surface2);border-color:var(--line);color:var(--text)}
+body.light .ring-track{stroke:#d5dfe7}
+body.light .ring-knob{fill:#fff;stroke:var(--accent)}
+body.light .volume-row{color:var(--muted)}
+body.light input[type=range]{background:#d2dce4}
+body.light .bottom-nav{background:#ffffffed;border-color:var(--line);color:var(--muted)}
+body.light .nav-item.active{color:var(--accent)}
+body.light .icon-btn,body.light .back-btn{background:var(--surface2);border-color:var(--line);color:var(--text)}
+.detected-note{letter-spacing:-1.8px;overflow-wrap:anywhere}
