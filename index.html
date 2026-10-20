@@ -4,30 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b0f14">
-  <meta name="description" content="Тюнер и метроном для музыкантов">
-  <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#090d12">
-  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <meta name="description" content="Тюнер и метроном для музыкантов">
+  <link rel="manifest" href="./manifest.json">
   <link rel="stylesheet" href="style.css">
-  <title>Tuner · Metronome</title>
+  <title>tuner.metronom</title>
 </head>
 <body>
 <div class="app-shell">
   <header class="app-header">
-    <div class="brand-mark" aria-label="Tuner Metronome">
-      
-    </div>
-    <div class="brand-copy"><div class="eyebrow">STUDIO TOOLS</div><div class="brand-title">Tuner <span>·</span> Metronome</div></div>
+    <div class="brand-mark" aria-label="tuner.metronom"><img src="./icons/icon-192.png" alt=""></div>
+    <div class="brand-copy"><div class="brand-title">tuner.metronom</div></div>
     <button class="icon-btn" id="settings-open">Настройки</button>
   </header>
 
-  <nav class="segmented" aria-label="Режим">
-    <button class="segment active" data-screen="tuner"><span data-i18n="tuner">Тюнер</span></button>
-    <button class="segment" data-screen="metronome"><span data-i18n="metronome">Метроном</span></button>
-  </nav>
 
   <main id="screen-tuner" class="screen active">
     <section class="tuner-panel">
@@ -51,32 +44,29 @@
       </div>
     </section>
     <section class="tuning-tools">
-      <div class="tool-heading"><span data-i18n="referencePitch">Эталонная частота</span><strong id="reference-label">440 Hz</strong></div>
-      <div class="reference-choices">
-        <button data-ref="438">438</button><button data-ref="440" class="selected">440</button><button data-ref="442">442</button><button data-ref="445">445</button>
-      </div>
       <div class="tool-heading strings-heading"><span data-i18n="guitarStrings">Струны гитары</span><span data-i18n="standard">Стандартный строй</span></div>
       <div class="strings">
         <button data-string="E2" aria-label="6-я струна E2"><b>E</b><small>6</small><span>82.4 Hz</span></button><button data-string="A2" aria-label="5-я струна A2"><b>A</b><small>5</small><span>110 Hz</span></button><button data-string="D3" aria-label="4-я струна D3"><b>D</b><small>4</small><span>146.8 Hz</span></button><button data-string="G3" aria-label="3-я струна G3"><b>G</b><small>3</small><span>196 Hz</span></button><button data-string="B3" aria-label="2-я струна B3"><b>B</b><small>2</small><span>246.9 Hz</span></button><button data-string="E4" aria-label="1-я струна E4"><b>E</b><small>1</small><span>329.6 Hz</span></button>
-      </div><p class="string-legend"><span></span> Зелёный — струна настроена</p>
+      </div>
+      <div class="string-tools-row"><p class="string-legend"><span></span><span data-i18n="stringLegend">Зелёный — струна настроена</span></p><button id="play-reference-string" class="secondary-btn" type="button" data-i18n="playReferenceString">Послушать эталон</button></div>
     </section>
   </main>
 
   <main id="screen-metronome" class="screen">
     <section class="metro-panel">
-      <div class="panel-top"><span class="section-label" data-i18n="tempo">ТЕМП</span><span class="live-dot"><i></i><span data-i18n="precise">ТОЧНЫЙ РИТМ</span></span></div>
+      <div class="panel-top"><span class="section-label" data-i18n="tempo">ТЕМП</span></div>
       <div class="tempo-ring">
         <svg viewBox="0 0 260 260" aria-hidden="true">
           <path d="M 54 190 A 104 104 0 1 1 206 190" class="ring-track"/>
           <path d="M 54 190 A 104 104 0 1 1 206 190" class="ring-progress" id="tempo-ring-progress"/>
           <circle cx="130" cy="26" r="5" class="ring-knob"/>
         </svg>
-        <div class="tempo-value"><strong id="bpm-val">120</strong><span>BPM</span><small data-i18n="beatsMinute">ударов в минуту</small></div>
+        <div class="tempo-value"><strong id="bpm-val">120</strong><span>BPM</span></div>
       </div>
       <div class="tempo-controls"><button id="bpm-minus" aria-label="Уменьшить темп">−</button><input type="range" id="bpm-slider" min="30" max="250" value="120" aria-label="Темп"><button id="bpm-plus" aria-label="Увеличить темп">+</button></div>
       <div class="metro-options-row">
-        <label class="option-card"><span class="option-icon"></span><span><small data-i18n="timeSignature">Размер</small><select id="time-signature"><option value="4">4/4</option><option value="3">3/4</option><option value="2">2/4</option><option value="6">6/8</option><option value="5">5/4</option><option value="7">7/8</option></select></span></label>
-        <label class="option-card"><span class="option-icon"></span><span><small data-i18n="accent">Акцент</small><select id="accent-select"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="0">Нет</option></select></span></label>
+        <div class="option-card"><span class="option-icon" data-icon="music-note"></span><span class="option-copy"><small data-i18n="timeSignature">Размер</small><button class="custom-select-trigger" id="time-signature-trigger" aria-expanded="false">4/4</button></span><div class="custom-choice-panel" id="time-signature-panel"><button data-meter="4" class="selected">4/4</button><button data-meter="3">3/4</button><button data-meter="2">2/4</button><button data-meter="6">6/8</button><button data-meter="5">5/4</button><button data-meter="7">7/8</button></div></div>
+        <div class="option-card"><span class="option-icon" data-icon="metronome"></span><span class="option-copy"><small data-i18n="accent">Акцент</small><button class="custom-select-trigger" id="accent-select-trigger" aria-expanded="false">1</button></span><div class="custom-choice-panel" id="accent-select-panel"><button data-accent="1" class="selected">1</button><button data-accent="2">2</button><button data-accent="3">3</button><button data-accent="4">4</button><button data-accent="0" data-i18n="none">Нет</button></div></div>
       </div>
       <button id="metro-start-btn" class="play-btn" aria-label="Запустить метроном"><svg id="play-icon" viewBox="0 0 24 24"><path d="m8 5 12 7-12 7Z"/></svg></button>
       <div id="dots-container" class="beat-dots"></div>
@@ -91,33 +81,28 @@
   <main id="screen-settings" class="screen settings-screen">
     <div class="settings-heading"><button id="settings-back" class="back-btn" aria-label="Назад"></button><h1 data-i18n="settings">Настройки</h1></div>
     <section class="settings-group"><h2 data-i18n="general">Общие</h2>
-      <button class="setting-row" data-setting="language"><span class="setting-icon">文</span><span data-i18n="language">Язык</span><strong id="language-value">Русский</strong><b>›</b></button>
-      <button class="setting-row" data-setting="notation"><span class="setting-icon">♫</span><span data-i18n="notation">Обозначение нот</span><strong id="notation-value">Латиница</strong><b>›</b></button>
-      <button class="setting-row" data-setting="reference"><span class="setting-icon">⌁</span><span data-i18n="referencePitch">Эталон A4</span><strong id="setting-ref-value">440 Hz</strong><b>›</b></button>
-      <button class="setting-row" data-setting="theme"><span class="setting-icon">◐</span><span data-i18n="theme">Тема</span><strong id="theme-value">Тёмная</strong><b>›</b></button>
+      <button class="setting-row" data-setting="language"><span class="setting-icon" data-icon="language"></span><span data-i18n="language">Язык</span><strong id="language-value">Русский</strong><b>›</b></button>
+      <button class="setting-row" data-setting="notation"><span class="setting-icon" data-icon="music"></span><span data-i18n="notation">Обозначение нот</span><strong id="notation-value">Латиница</strong><b>›</b></button>
+      <button class="setting-row" data-setting="accidentals"><span class="setting-icon" data-icon="flat"></span><span data-i18n="accidentals">Альтерации</span><strong id="accidentals-value">Диезы</strong><b>›</b></button>
+      <button class="setting-row" data-setting="reference"><span class="setting-icon" data-icon="tuning-fork"></span><span data-i18n="referencePitch">Эталон A4</span><strong id="setting-ref-value">440 Hz</strong><b>›</b></button>
+      <button class="setting-row" data-setting="theme"><span class="setting-icon" data-icon="sun-moon"></span><span data-i18n="theme">Тема</span><strong id="theme-value">Тёмная</strong><b>›</b></button>
     </section>
     <section class="settings-group"><h2 data-i18n="tuner">Тюнер</h2>
-      <button class="setting-row" data-setting="precision"><span class="setting-icon">⌖</span><span data-i18n="precision">Точность</span><strong id="precision-value">1 cent</strong><b>›</b></button>
-      <button class="setting-row" data-setting="display"><span class="setting-icon">◉</span><span data-i18n="displayStyle">Стиль отображения</span><strong id="display-value">Стрелка</strong><b>›</b></button>
-      <button class="setting-row" data-setting="calibration"><span class="setting-icon">⌁</span><span data-i18n="calibration">Калибровка</span><strong id="calibration-value">0 cent</strong><b>›</b></button>
+      <button class="setting-row" data-setting="precision"><span class="setting-icon" data-icon="target"></span><span data-i18n="precision">Точность</span><strong id="precision-value">1 cent</strong><b>›</b></button>
+      <button class="setting-row" data-setting="display"><span class="setting-icon" data-icon="gauge"></span><span data-i18n="displayStyle">Стиль отображения</span><strong id="display-value">Стрелка</strong><b>›</b></button>
+      <button class="setting-row" data-setting="calibration"><span class="setting-icon" data-icon="tuning-fork"></span><span data-i18n="calibration">Калибровка</span><strong id="calibration-value">0 cent</strong><b>›</b></button>
     </section>
     <section class="settings-group"><h2 data-i18n="metronome">Метроном</h2>
-      <button class="setting-row" data-setting="sound"><span class="setting-icon">♫</span><span data-i18n="sound">Звук</span><strong id="sound-value">Классический</strong><b>›</b></button>
+      <button class="setting-row" data-setting="sound"><span class="setting-icon" data-icon="music"></span><span data-i18n="sound">Звук</span><strong id="sound-value">Классический</strong><b>›</b></button>
       <div class="setting-row volume-setting"><span class="setting-icon"></span><span data-i18n="volume">Громкость</span><input id="settings-volume" type="range" min="0" max="100" value="70"><strong id="settings-volume-value">70%</strong></div>
     </section>
-    <section class="settings-group"><h2 data-i18n="about">О приложении</h2><div class="about-row">Tuner · Metronome <span>v2.0</span></div></section>
+    <section class="settings-group"><h2 data-i18n="about">О приложении</h2><div class="about-row">tuner.metronom <span>v3.0</span></div></section>
   </main>
 
   <div id="subview" class="subview" aria-live="polite"><div class="subview-head"><button id="subview-back" class="back-btn"></button><h2 id="subview-title"></h2></div><div id="subview-options" class="subview-options"></div></div>
   <div id="toast" class="toast" role="status"></div>
-  <footer class="bottom-nav"><button class="nav-item active" data-screen="tuner"><span data-i18n="tuner">Тюнер</span></button><button class="nav-item" data-screen="metronome"><span data-i18n="metronome">Метроном</span></button><button class="nav-item" data-screen="settings"><span data-i18n="settings">Настройки</span></button></footer>
+  <footer class="bottom-nav"><button class="nav-item active" data-screen="tuner"><span class="nav-icon" data-icon="gauge"></span><span data-i18n="tuner">Тюнер</span></button><button class="nav-item" data-screen="metronome"><span class="nav-icon" data-icon="metronome"></span><span data-i18n="metronome">Метроном</span></button><button class="nav-item" data-screen="settings"><span class="nav-icon" data-icon="sun-moon"></span><span data-i18n="settings">Настройки</span></button></footer>
 </div>
 <script src="app.js"></script>
-<script>
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(err => console.warn('PWA service worker registration failed:', err));
-  });
-}
-</script>
+<script>if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1')) addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(e=>console.warn('Service worker registration failed',e)));</script>
 </body></html>

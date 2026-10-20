@@ -1,15 +1,15 @@
 {
   "id": "./",
-  "name": "Tuner · Metronome",
-  "short_name": "Tuner",
-  "description": "Минималистичный гитарный тюнер и метроном",
+  "name": "tuner.metronom",
+  "short_name": "tuner.metronom",
+  "description": "Гитарный тюнер и метроном",
   "lang": "ru",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#090d12",
-  "theme_color": "#090d12",
+  "theme_color": "#0b0f14",
   "icons": [
     {
       "src": "./icons/icon-192.png",
