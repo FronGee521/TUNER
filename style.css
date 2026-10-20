@@ -88,3 +88,17 @@ body.light .bottom-nav{background:#ffffffed;border-color:var(--line);color:var(-
 body.light .nav-item.active{color:var(--accent)}
 body.light .icon-btn,body.light .back-btn{background:var(--surface2);border-color:var(--line);color:var(--text)}
 .detected-note{letter-spacing:-1.8px;overflow-wrap:anywhere}
+
+/* Final visual cleanup */
+.gauge-labels text,#gauge-labels text{font-size:9px;font-weight:600;paint-order:stroke;stroke:var(--bg);stroke-width:2px;stroke-linejoin:round}
+#gauge-labels text:first-child{transform:translate(-1px,0)}
+#gauge-labels text:last-child{transform:translate(1px,0)}
+.gauge-track{stroke-width:1.4!important;opacity:.5!important}
+.gauge-arc{stroke-width:1.8!important}
+.gauge-tick{stroke-width:.8!important;opacity:.72}
+.gauge-tick.major{stroke-width:1.1!important;opacity:.9}
+.gauge-tick.center{stroke-width:1.6!important}
+#settings-open{width:42px;height:42px;min-width:42px;padding:0;border-radius:14px;display:grid;place-items:center}
+#settings-open [data-icon],#settings-open svg{display:block;width:21px;height:21px}
+#settings-open svg{stroke-width:1.8}
+.string-tools-row{margin-top:10px}
