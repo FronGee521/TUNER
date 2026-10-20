@@ -1,4 +1,4 @@
-const CACHE_NAME="tuner-metronom-v5";
+const CACHE_NAME="tuner-metronom-v6";
 const SHELL=["./","./index.html","./style.css","./app.js","./manifest.json","./icons/icon-192.png","./icons/icon-512.png","./icons/icon-maskable-512.png"];
 self.addEventListener("install",event=>event.waitUntil((async()=>{const c=await caches.open(CACHE_NAME);await Promise.all(SHELL.map(async p=>{try{const r=await fetch(p,{cache:"reload"});if(r.ok)await c.put(p,r)}catch(_){}}));await self.skipWaiting()})()));
 self.addEventListener("activate",event=>event.waitUntil((async()=>{await Promise.all((await caches.keys()).filter(k=>k.startsWith("tuner-metronom-")&&k!==CACHE_NAME).map(k=>caches.delete(k)));await self.clients.claim()})()));
