@@ -1,4 +1,4 @@
-// --- Вкладки ---
+// --- Переключение вкладок ---
 const tabBtns = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 
@@ -11,9 +11,10 @@ tabBtns.forEach(btn => {
     });
 });
 
-// --- ТЮНЕР С ПЛАВНОЙ СТРЕЛКОЙ И ПОДСВЕТКОЙ КРАЕВ ---
+// --- ТЮНЕР С ПЛАВНЫМ LERP СМЕЩЕНИЕМ И ПОДСВЕТКОЙ ---
 const startBtn = document.getElementById('start-btn');
-const display = document.getElementById('display');
+const tunerIdle = document.getElementById('tuner-idle');
+const tunerDisplay = document.getElementById('tuner-display');
 const noteElem = document.getElementById('note');
 const freqElem = document.getElementById('frequency');
 const centsElem = document.getElementById('cents');
@@ -25,12 +26,11 @@ let audioContext = null;
 let analyser = null;
 let microphone = null;
 
-let currentAngle = 0;
-let targetAngle = 0;
+let currentOffset = 0;
+let targetOffset = 0;
 
 const noteStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
-// Подсказки по струнам гитары в стандартном строе (E2, A2, D3, G3, B3, E4)
 const standardStrings = {
     "E2": "6-я струна (E)",
     "A2": "5-я струна (A)",
@@ -53,8 +53,9 @@ startBtn.addEventListener('click', async () => {
         microphone = audioContext.createMediaStreamSource(stream);
         microphone.connect(analyser);
 
+        tunerIdle.style.display = 'none';
+        tunerDisplay.style.display = 'block';
         startBtn.style.display = 'none';
-        display.style.display = 'block';
 
         updatePitch();
         animateNeedle();
@@ -136,20 +137,20 @@ function updatePitch() {
 
         let fullNoteName = `${noteName}${octave}`;
         noteElem.textContent = fullNoteName;
-        freqElem.textContent = `${pitch.toFixed(1)} Hz`;
+        freqElem.textContent = `${pitch.toFixed(1)} Гц`;
         centsElem.textContent = `${cents > 0 ? '+' : ''}${cents} центов`;
 
-        stringHint.textContent = standardStrings[fullNoteName] || "";
+        stringHint.textContent = standardStrings[fullNoteName] || "Хроматический режим";
 
+        // Процентное смещение по шкале (-50% до +50%)
         let centsClamped = Math.max(-50, Math.min(50, cents));
-        targetAngle = centsClamped * 1.5;
+        targetOffset = (centsClamped / 50) * 45; // Смещение в процентах
 
-        // Зелёная подсветка по краям экрана при идеальной настройке (±3 цента)
         if (Math.abs(cents) < 3) {
-            noteElem.style.color = '#4caf50';
+            noteElem.style.color = '#2ecc71';
             glowOverlay.classList.add('active');
         } else {
-            noteElem.style.color = '#fff';
+            noteElem.style.color = '#ffffff';
             glowOverlay.classList.remove('active');
         }
     } else {
@@ -159,12 +160,43 @@ function updatePitch() {
     setTimeout(updatePitch, 50);
 }
 
-// Плавная анимация движения стрелки (линейная интерполяция LERP)
+// Плавная анимация LERP
 function animateNeedle() {
-    currentAngle += (targetAngle - currentAngle) * 0.12;
-    needle.style.transform = `translateX(-50%) rotate(${currentAngle}deg)`;
+    currentOffset += (targetOffset - currentOffset) * 0.12;
+    needle.style.transform = `translateX(-50%) translateX(${currentOffset}vw)`;
     requestAnimationFrame(animateNeedle);
 }
+
+
+// --- КАСТОМНОЕ МЕНЮ ДЛЯ ВЫБОРА РАЗМЕРА МЕТРОНОМА ---
+const customSelect = document.getElementById('time-select-custom');
+const selectTrigger = document.getElementById('select-trigger');
+const selectedVal = document.getElementById('selected-val');
+const options = document.querySelectorAll('.option');
+
+selectTrigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    customSelect.classList.toggle('open');
+});
+
+document.addEventListener('click', () => {
+    customSelect.classList.remove('open');
+});
+
+options.forEach(opt => {
+    opt.addEventListener('click', () => {
+        options.forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        selectedVal.textContent = opt.textContent;
+        beatsPerMeasure = parseInt(opt.dataset.value);
+        currentBeat = 0;
+        createDots();
+        if (isPlaying) {
+            stopMetronome();
+            startMetronome();
+        }
+    });
+});
 
 
 // --- МЕТРОНОМ ---
@@ -179,7 +211,6 @@ const bpmVal = document.getElementById('bpm-val');
 const bpmSlider = document.getElementById('bpm-slider');
 const bpmMinus = document.getElementById('bpm-minus');
 const bpmPlus = document.getElementById('bpm-plus');
-const timeSelect = document.getElementById('time-select');
 const metroStartBtn = document.getElementById('metro-start-btn');
 const dotsContainer = document.getElementById('dots-container');
 
@@ -207,16 +238,6 @@ bpmSlider.addEventListener('input', (e) => updateBpm(parseInt(e.target.value)));
 bpmMinus.addEventListener('click', () => updateBpm(bpm - 1));
 bpmPlus.addEventListener('click', () => updateBpm(bpm + 1));
 
-timeSelect.addEventListener('change', (e) => {
-    beatsPerMeasure = parseInt(e.target.value);
-    currentBeat = 0;
-    createDots();
-    if (isPlaying) {
-        stopMetronome();
-        startMetronome();
-    }
-});
-
 function playClick(isAccent) {
     if (!metroAudioContext) {
         metroAudioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -225,16 +246,16 @@ function playClick(isAccent) {
     const gain = metroAudioContext.createGain();
 
     osc.type = 'sine';
-    osc.frequency.value = isAccent ? 1000 : 800; // Акцентная доля выше по тону
+    osc.frequency.value = isAccent ? 1000 : 750;
     
     gain.gain.setValueAtTime(1, metroAudioContext.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, metroAudioContext.currentTime + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, metroAudioContext.currentTime + 0.04);
 
     osc.connect(gain);
     gain.connect(metroAudioContext.destination);
 
     osc.start();
-    osc.stop(metroAudioContext.currentTime + 0.05);
+    osc.stop(metroAudioContext.currentTime + 0.04);
 }
 
 function tick() {
@@ -256,8 +277,8 @@ function tick() {
 
 function startMetronome() {
     isPlaying = true;
-    metroStartBtn.textContent = 'Стоп';
-    metroStartBtn.style.backgroundColor = '#ff3b30';
+    metroStartBtn.textContent = 'Остановить';
+    metroStartBtn.classList.add('stop');
     currentBeat = 0;
     tick();
     const interval = (60 / bpm) * 1000;
@@ -266,8 +287,8 @@ function startMetronome() {
 
 function stopMetronome() {
     isPlaying = false;
-    metroStartBtn.textContent = 'Старт';
-    metroStartBtn.style.backgroundColor = '#007aff';
+    metroStartBtn.textContent = 'Запустить метроном';
+    metroStartBtn.classList.remove('stop');
     clearInterval(metroTimer);
     const dots = dotsContainer.children;
     for (let i = 0; i < dots.length; i++) {

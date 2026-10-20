@@ -1,10 +1,10 @@
 {
-  "name": "Guitar Combo PWA",
+  "name": "Guitar Combo",
   "short_name": "GuitarCombo",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#121212",
-  "theme_color": "#121212",
+  "background_color": "#0a0c0e",
+  "theme_color": "#0a0c0e",
   "icons": [
     {
       "src": "icon.png",
