@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b0f14">
   <meta name="description" content="Тюнер и метроном для музыкантов">
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#090d12">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <link rel="stylesheet" href="style.css">
   <title>Tuner · Metronome</title>
 </head>
@@ -108,5 +113,11 @@
   <footer class="bottom-nav"><button class="nav-item active" data-screen="tuner"><span data-i18n="tuner">Тюнер</span></button><button class="nav-item" data-screen="metronome"><span data-i18n="metronome">Метроном</span></button><button class="nav-item" data-screen="settings"><span data-i18n="settings">Настройки</span></button></footer>
 </div>
 <script src="app.js"></script>
-<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});</script>
+<script>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(err => console.warn('PWA service worker registration failed:', err));
+  });
+}
+</script>
 </body></html>

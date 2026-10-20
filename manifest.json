@@ -1,9 +1,37 @@
 {
-  "name":"Tuner · Metronome",
-  "short_name":"Tuner",
-  "start_url":"./index.html",
-  "display":"standalone",
-  "background_color":"#090d12",
-  "theme_color":"#090d12",
-  "description":"Минималистичный тюнер и метроном"
+  "id": "./",
+  "name": "Tuner · Metronome",
+  "short_name": "Tuner",
+  "description": "Минималистичный гитарный тюнер и метроном",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#090d12",
+  "theme_color": "#090d12",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": [
+    "music",
+    "utilities"
+  ]
 }
