@@ -1,10 +1,10 @@
 {
-  "name": "Guitar Combo",
+  "name": "Guitar Combo Pro",
   "short_name": "GuitarCombo",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#0a0c0e",
-  "theme_color": "#0a0c0e",
+  "background_color": "#12161f",
+  "theme_color": "#121212",
   "icons": [
     {
       "src": "icon.png",

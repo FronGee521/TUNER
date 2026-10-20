@@ -3,144 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guitar Combo</title>
+    <title>Guitar Combo Pro</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
-    <meta name="theme-color" content="#0d0f12">
+    <meta name="theme-color" content="#1b222c">
 </head>
 <body>
-    <div id="glow-overlay" class="glow-overlay"></div>
-
     <div class="app-container">
-        <!-- Верхняя шапка -->
-        <header class="header">
-            <div class="brand">
-                <div class="logo-icon">🎸</div>
-                <div class="brand-text">
-                    <span class="brand-title">GUITAR COMBO</span>
-                    <span class="brand-subtitle">ИНСТРУМЕНТЫ ДЛЯ ГИТАРИСТА</span>
-                </div>
+        <!-- Верхняя панель управления (как в референсе) -->
+        <header class="top-bar">
+            <div class="menu-pill">
+                <button class="pill-btn active" data-tab="tuner">Тюнер</button>
+                <button class="pill-btn" data-tab="metronome">Метроном</button>
             </div>
-            <div class="status-badge"><span class="status-dot"></span>ГОТОВ</div>
+            <div class="ref-indicator">
+                <span>A4 = 440Hz</span>
+            </div>
         </header>
 
-        <!-- Навигационные вкладки -->
-        <nav class="tabs">
-            <button class="tab-btn active" data-tab="tuner">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                Тюнер
-            </button>
-            <button class="tab-btn" data-tab="metronome">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                Метроном
-            </button>
-        </nav>
-
-        <!-- ВКЛАДКА: ТЮНЕР -->
+        <!-- ВКЛАДКА ТЮНЕР -->
         <main id="tuner-tab" class="tab-content active">
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">НАСТРОЙКА СТРУН</span>
-                    <span class="mode-tag">ХРОМАТИЧЕСКИЙ</span>
-                </div>
+            <!-- Аналоговая шкала-спидометр -->
+            <div class="analog-panel">
+                <div class="gauge-container">
+                    <!-- Циферблат со шкалой -->
+                    <svg class="gauge-svg" viewBox="0 0 200 105">
+                        <!-- Деления шкалы -->
+                        <g class="ticks" stroke="#4a5568" stroke-width="1.5">
+                            <!-- -50 до +50 с шагом -->
+                            <line x1="100" y1="10" x2="100" y2="18" stroke="#2ecc71" stroke-width="2.5" />
+                            <line x1="80" y1="11.5" x2="80" y2="17" stroke="#cbd5e1" />
+                            <line x1="60" y1="16" x2="60" y2="21" stroke="#cbd5e1" />
+                            <line x1="40" y1="23.5" x2="40" y2="28" stroke="#cbd5e1" />
+                            <line x1="22" y1="34" x2="23.5" y2="38" stroke="#ef4444" />
+                            <line x1="120" y1="11.5" x2="120" y2="17" stroke="#cbd5e1" />
+                            <line x1="140" y1="16" x2="140" y2="21" stroke="#cbd5e1" />
+                            <line x1="160" y1="23.5" x2="160" y2="28" stroke="#cbd5e1" />
+                            <line x1="178" y1="34" x2="176.5" y2="38" stroke="#ef4444" />
+                        </g>
+                        <!-- Цифры шкалы -->
+                        <text x="100" y="30" fill="#2ecc71" font-size="7" font-weight="bold" text-anchor="middle">0</text>
+                        <text x="60" y="33" fill="#94a3b8" font-size="6" text-anchor="middle">-20</text>
+                        <text x="140" y="33" fill="#94a3b8" font-size="6" text-anchor="middle">+20</text>
+                        <text x="25" y="48" fill="#ef4444" font-size="6" text-anchor="middle">-50</text>
+                        <text x="175" y="48" fill="#ef4444" font-size="6" text-anchor="middle">+50</text>
+                    </svg>
 
-                <div id="tuner-idle" class="tuner-idle">
-                    <p class="idle-text">Включите микрофон и сыиграйте струну</p>
-                </div>
-
-                <div id="tuner-display" class="tuner-display" style="display: none;">
-                    <div id="string-hint" class="string-hint">--</div>
-                    <div id="note" class="note-display">--</div>
-                    
-                    <div class="readout-row">
-                        <div class="readout-box">
-                            <span class="readout-label">ЧАСТОТА</span>
-                            <span id="frequency" class="readout-value">0.0 Гц</span>
-                        </div>
-                        <div class="readout-divider"></div>
-                        <div class="readout-box">
-                            <span class="readout-label">ОТКЛОНЕНИЕ</span>
-                            <span id="cents" class="readout-value">0 центов</span>
-                        </div>
+                    <!-- Стрелка спидометра -->
+                    <div class="speedo-pivot">
+                        <div class="speedo-needle" id="speedo-needle"></div>
                     </div>
 
-                    <!-- Визуальная шкала настройки -->
-                    <div class="meter-box">
-                        <div class="scale-labels">
-                            <span>-50</span>
-                            <span>-25</span>
-                            <span class="center-label">0</span>
-                            <span>+25</span>
-                            <span>+50</span>
-                        </div>
-                        <div class="meter-track">
-                            <div class="center-line"></div>
-                            <div class="meter-needle" id="needle"></div>
-                        </div>
-                        <div class="status-bar">
-                            <span>НИЖЕ</span>
-                            <span class="in-tune-label">В ТОЧКУ</span>
-                            <span>ВЫШЕ</span>
-                        </div>
-                    </div>
+                    <!-- Плашка центов внутри циферблата -->
+                    <div class="cents-badge" id="cents-badge">0 ¢</div>
                 </div>
 
-                <div class="reference-info">
-                    <span>ЭТАЛОН ЛЯ (A4): <strong>440 Гц</strong></span>
+                <div class="sub-freq-row">
+                    <span id="string-hint">Ожидание сигнала...</span>
+                    <span id="frequency">0.0 Hz</span>
                 </div>
-
-                <button id="start-btn" class="action-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                    Включить микрофон
-                </button>
             </div>
+
+            <!-- Большой блок ноты -->
+            <div class="note-card">
+                <div id="note" class="massive-note">--</div>
+            </div>
+
+            <!-- Кнопка запуска -->
+            <button id="start-btn" class="mic-launch-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                Включить микрофон
+            </button>
         </main>
 
-        <!-- ВКЛАДКА: МЕТРОНОМ -->
+        <!-- ВКЛАДКА МЕТРОНОМ -->
         <main id="metronome-tab" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">РИТМ И ТЕМП</span>
-                    <span class="mode-tag">ТОЧНЫЙ КЛИК</span>
+            <div class="metro-card">
+                <div class="bpm-display-box">
+                    <span id="bpm-val">120</span>
+                    <span class="bpm-lbl">BPM</span>
                 </div>
 
-                <div class="bpm-section">
-                    <div class="bpm-number-box">
-                        <span id="bpm-val" class="bpm-value">120</span>
-                        <span class="bpm-unit">BPM</span>
-                    </div>
-
-                    <div class="slider-controls">
-                        <button id="bpm-minus" class="circle-btn">-</button>
-                        <input type="range" id="bpm-slider" class="custom-slider" min="30" max="250" value="120">
-                        <button id="bpm-plus" class="circle-btn">+</button>
-                    </div>
+                <div class="bpm-stepper">
+                    <button id="bpm-minus" class="step-ctrl">-</button>
+                    <input type="range" id="bpm-slider" class="range-line" min="30" max="250" value="120">
+                    <button id="bpm-plus" class="step-ctrl">+</button>
                 </div>
 
-                <!-- Пользовательское стилизованное выпадающее меню размера -->
-                <div class="custom-select-wrapper">
-                    <label class="select-label">Размер такта</label>
-                    <div class="custom-select" id="time-select-custom">
-                        <div class="select-trigger" id="select-trigger">
-                            <span id="selected-val">4 / 4 (Стандартный)</span>
-                            <div class="arrow"></div>
-                        </div>
-                        <div class="select-options" id="select-options">
-                            <div class="option selected" data-value="4">4 / 4 (Стандартный)</div>
-                            <div class="option" data-value="3">3 / 4 (Вальс)</div>
-                            <div class="option" data-value="2">2 / 4 (Марш)</div>
-                            <div class="option" data-value="6">6 / 8 (Сложный)</div>
-                        </div>
+                <div class="select-box-custom" id="metro-select">
+                    <div class="select-head" id="metro-trigger">
+                        <span id="metro-selected-text">Размер: 4 / 4 (Стандартный)</span>
+                        <div class="select-arrow"></div>
+                    </div>
+                    <div class="select-dropdown" id="metro-options">
+                        <div class="m-option active" data-val="4">4 / 4 (Стандартный)</div>
+                        <div class="m-option" data-val="3">3 / 4 (Вальс)</div>
+                        <div class="m-option" data-val="2">2 / 4 (Марш)</div>
+                        <div class="m-option" data-val="6">6 / 8 (Сложный)</div>
                     </div>
                 </div>
 
-                <!-- Точки долей -->
-                <div id="dots-container" class="dots-container"></div>
+                <div id="dots-container" class="beat-dots"></div>
 
-                <button id="metro-start-btn" class="action-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                    Запустить метроном
-                </button>
+                <button id="metro-start-btn" class="mic-launch-btn">Запустить метроном</button>
             </div>
         </main>
     </div>
@@ -148,7 +113,7 @@
     <script src="app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js?v=7');
+            navigator.serviceWorker.register('sw.js?v=8');
         }
     </script>
 </body>

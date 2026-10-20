@@ -1,36 +1,67 @@
 // --- Переключение вкладок ---
-const tabBtns = document.querySelectorAll('.tab-btn');
+const pillBtns = document.querySelectorAll('.pill-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 
-tabBtns.forEach(btn => {
+pillBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-        tabBtns.forEach(b => b.classList.remove('active'));
+        pillBtns.forEach(b => b.classList.remove('active'));
         tabContents.forEach(c => c.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(`${btn.dataset.tab}-tab`).classList.add('active');
     });
 });
 
-// --- ТЮНЕР С ПЛАВНЫМ LERP СМЕЩЕНИЕМ И ПОДСВЕТКОЙ ---
+// --- Звуковой сигнал при идеальной настройке (Success Sound) ---
+let successAudioCtx = null;
+let lastInTuneState = false;
+
+function playSuccessChime() {
+    try {
+        if (!successAudioCtx) {
+            successAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (successAudioCtx.state === 'suspended') {
+            successAudioCtx.resume();
+        }
+        
+        const now = successAudioCtx.currentTime;
+        const osc = successAudioCtx.createOscillator();
+        const gain = successAudioCtx.createGain();
+
+        osc.type = 'sine';
+        // Приятный высокий «дзынь» при попадании в ноту (аккорд мажорной терции)
+        osc.frequency.setValueAtTime(523.25, now); // До (C5)
+        osc.frequency.setValueAtTime(659.25, now + 0.08); // Ми (E5)
+
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+
+        osc.connect(gain);
+        gain.connect(successAudioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.4);
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// --- АНАЛОГОВЫЙ ТЮНЕР (СПИДОМЕТР) ---
 const startBtn = document.getElementById('start-btn');
-const tunerIdle = document.getElementById('tuner-idle');
-const tunerDisplay = document.getElementById('tuner-display');
 const noteElem = document.getElementById('note');
 const freqElem = document.getElementById('frequency');
-const centsElem = document.getElementById('cents');
-const needle = document.getElementById('needle');
+const centsBadge = document.getElementById('cents-badge');
+const needle = document.getElementById('speedo-needle');
 const stringHint = document.getElementById('string-hint');
-const glowOverlay = document.getElementById('glow-overlay');
 
 let audioContext = null;
 let analyser = null;
 let microphone = null;
 
-let currentOffset = 0;
-let targetOffset = 0;
+let currentAngle = 0;
+let targetAngle = 0;
 
 const noteStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-
 const standardStrings = {
     "E2": "6-я струна (E)",
     "A2": "5-я струна (A)",
@@ -53,9 +84,9 @@ startBtn.addEventListener('click', async () => {
         microphone = audioContext.createMediaStreamSource(stream);
         microphone.connect(analyser);
 
-        tunerIdle.style.display = 'none';
-        tunerDisplay.style.display = 'block';
-        startBtn.style.display = 'none';
+        startBtn.textContent = 'Тюнер активен';
+        startBtn.style.background = '#16a34a';
+        startBtn.disabled = true;
 
         updatePitch();
         animateNeedle();
@@ -137,58 +168,69 @@ function updatePitch() {
 
         let fullNoteName = `${noteName}${octave}`;
         noteElem.textContent = fullNoteName;
-        freqElem.textContent = `${pitch.toFixed(1)} Гц`;
-        centsElem.textContent = `${cents > 0 ? '+' : ''}${cents} центов`;
+        freqElem.textContent = `${pitch.toFixed(1)} Hz`;
+        centsBadge.textContent = `${cents > 0 ? '+' : ''}${cents} ¢`;
 
-        stringHint.textContent = standardStrings[fullNoteName] || "Хроматический режим";
+        stringHint.textContent = standardStrings[fullNoteName] || "Хроматический строй";
 
-        // Процентное смещение по шкале (-50% до +50%)
+        // Превращаем центы (-50 до +50) в градусы поворота стрелки спидометра (от -50 до +50 градусов)
         let centsClamped = Math.max(-50, Math.min(50, cents));
-        targetOffset = (centsClamped / 50) * 45; // Смещение в процентах
+        targetAngle = centsClamped; 
 
-        if (Math.abs(cents) < 3) {
+        // Идеальная настройка (в пределах ±3 цента)
+        if (Math.abs(cents) <= 3) {
             noteElem.style.color = '#2ecc71';
-            glowOverlay.classList.add('active');
+            centsBadge.style.borderColor = '#2ecc71';
+            centsBadge.style.color = '#2ecc71';
+            
+            // Звуковой сигнал срабатывает один раз при переходе в идеальную зону
+            if (!lastInTuneState) {
+                playSuccessChime();
+                lastInTuneState = true;
+            }
         } else {
             noteElem.style.color = '#ffffff';
-            glowOverlay.classList.remove('active');
+            centsBadge.style.borderColor = '#2c384d';
+            centsBadge.style.color = '#cbd5e1';
+            lastInTuneState = false;
         }
     } else {
-        glowOverlay.classList.remove('active');
+        stringHint.textContent = "Ожидание сигнала...";
+        lastInTuneState = false;
     }
 
     setTimeout(updatePitch, 50);
 }
 
-// Плавная анимация LERP
+// Плавная физика стрелки спидометра (LERP)
 function animateNeedle() {
-    currentOffset += (targetOffset - currentOffset) * 0.12;
-    needle.style.transform = `translateX(-50%) translateX(${currentOffset}vw)`;
+    currentAngle += (targetAngle - currentAngle) * 0.15;
+    needle.style.transform = `rotate(${currentAngle}deg)`;
     requestAnimationFrame(animateNeedle);
 }
 
 
-// --- КАСТОМНОЕ МЕНЮ ДЛЯ ВЫБОРА РАЗМЕРА МЕТРОНОМА ---
-const customSelect = document.getElementById('time-select-custom');
-const selectTrigger = document.getElementById('select-trigger');
-const selectedVal = document.getElementById('selected-val');
-const options = document.querySelectorAll('.option');
+// --- КАСТОМНЫЙ ВЫПАДАЮЩИЙ СПИСОК МЕТРОНОМА ---
+const metroSelect = document.getElementById('metro-select');
+const metroTrigger = document.getElementById('metro-trigger');
+const metroSelectedText = document.getElementById('metro-selected-text');
+const metroOptions = document.querySelectorAll('.m-option');
 
-selectTrigger.addEventListener('click', (e) => {
+metroTrigger.addEventListener('click', (e) => {
     e.stopPropagation();
-    customSelect.classList.toggle('open');
+    metroSelect.classList.toggle('open');
 });
 
 document.addEventListener('click', () => {
-    customSelect.classList.remove('open');
+    metroSelect.classList.remove('open');
 });
 
-options.forEach(opt => {
+metroOptions.forEach(opt => {
     opt.addEventListener('click', () => {
-        options.forEach(o => o.classList.remove('selected'));
-        opt.classList.add('selected');
-        selectedVal.textContent = opt.textContent;
-        beatsPerMeasure = parseInt(opt.dataset.value);
+        metroOptions.forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        metroSelectedText.textContent = `Размер: ${opt.textContent}`;
+        beatsPerMeasure = parseInt(opt.dataset.val);
         currentBeat = 0;
         createDots();
         if (isPlaying) {
@@ -205,7 +247,7 @@ let beatsPerMeasure = 4;
 let isPlaying = false;
 let currentBeat = 0;
 let metroTimer = null;
-let metroAudioContext = null;
+let metroAudioCtx = null;
 
 const bpmVal = document.getElementById('bpm-val');
 const bpmSlider = document.getElementById('bpm-slider');
@@ -238,24 +280,24 @@ bpmSlider.addEventListener('input', (e) => updateBpm(parseInt(e.target.value)));
 bpmMinus.addEventListener('click', () => updateBpm(bpm - 1));
 bpmPlus.addEventListener('click', () => updateBpm(bpm + 1));
 
-function playClick(isAccent) {
-    if (!metroAudioContext) {
-        metroAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+function playClickSound(isAccent) {
+    if (!metroAudioCtx) {
+        metroAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
-    const osc = metroAudioContext.createOscillator();
-    const gain = metroAudioContext.createGain();
+    const osc = metroAudioCtx.createOscillator();
+    const gain = metroAudioCtx.createGain();
 
     osc.type = 'sine';
-    osc.frequency.value = isAccent ? 1000 : 750;
+    osc.frequency.value = isAccent ? 1200 : 800;
     
-    gain.gain.setValueAtTime(1, metroAudioContext.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, metroAudioContext.currentTime + 0.04);
+    gain.gain.setValueAtTime(1, metroAudioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, metroAudioCtx.currentTime + 0.04);
 
     osc.connect(gain);
-    gain.connect(metroAudioContext.destination);
+    gain.connect(metroAudioCtx.destination);
 
     osc.start();
-    osc.stop(metroAudioContext.currentTime + 0.04);
+    osc.stop(metroAudioCtx.currentTime + 0.04);
 }
 
 function tick() {
@@ -265,7 +307,7 @@ function tick() {
     }
 
     const isAccent = currentBeat === 0;
-    playClick(isAccent);
+    playClickSound(isAccent);
 
     if (dots[currentBeat]) {
         dots[currentBeat].classList.add('active');
@@ -277,7 +319,7 @@ function tick() {
 
 function startMetronome() {
     isPlaying = true;
-    metroStartBtn.textContent = 'Остановить';
+    metroStartBtn.textContent = 'Остановить метроном';
     metroStartBtn.classList.add('stop');
     currentBeat = 0;
     tick();
