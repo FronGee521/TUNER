@@ -32,7 +32,7 @@
           <path d="M28 146 A132 132 0 0 1 292 146" class="gauge-track"/>
           <path d="M28 146 A132 132 0 0 1 292 146" class="gauge-arc"/>
           <g id="gauge-ticks"></g>
-          <g id="gauge-labels"><text x="43" y="132" text-anchor="start">−50</text><text x="160" y="20" text-anchor="middle">0</text><text x="277" y="132" text-anchor="end">+50</text></g>
+          <g id="gauge-labels"><text x="30" y="130">−50</text><text x="160" y="20" text-anchor="middle">0</text><text x="290" y="130" text-anchor="end">+50</text></g>
           <circle cx="160" cy="146" r="7" class="needle-hub"/>
           <line id="needle" x1="160" y1="146" x2="160" y2="35" class="needle"/>
         </svg>
@@ -48,7 +48,7 @@
       <div class="strings">
         <button data-string="E2" aria-label="6-я струна E2"><b>E</b><small>6</small><span>82.4 Hz</span></button><button data-string="A2" aria-label="5-я струна A2"><b>A</b><small>5</small><span>110 Hz</span></button><button data-string="D3" aria-label="4-я струна D3"><b>D</b><small>4</small><span>146.8 Hz</span></button><button data-string="G3" aria-label="3-я струна G3"><b>G</b><small>3</small><span>196 Hz</span></button><button data-string="B3" aria-label="2-я струна B3"><b>B</b><small>2</small><span>246.9 Hz</span></button><button data-string="E4" aria-label="1-я струна E4"><b>E</b><small>1</small><span>329.6 Hz</span></button>
       </div>
-      <div class="string-tools-row"><button id="play-reference-string" class="secondary-btn" type="button" data-i18n="playReferenceString">Послушать эталон</button></div>
+      <div class="string-tools-row"><p class="string-legend"><span></span><span data-i18n="stringLegend">Зелёный — струна настроена</span></p><button id="play-reference-string" class="secondary-btn" type="button" data-i18n="playReferenceString">Послушать эталон</button></div>
     </section>
   </main>
 
