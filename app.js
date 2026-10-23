@@ -7,7 +7,6 @@ const translations = {
 let lang=localStorage.getItem("tm-lang")||"ru", notation=localStorage.getItem("tm-notation")||"latin", accidentals=localStorage.getItem("tm-accidentals")||"sharp", refA=Number(localStorage.getItem("tm-ref")||440), theme=localStorage.getItem("tm-theme")||"dark", precision=Number(localStorage.getItem("tm-precision")||3), displayStyle=localStorage.getItem("tm-display")||"pointer", calibration=Number(localStorage.getItem("tm-calibration")||0), sound=localStorage.getItem("tm-sound")||"classic", volume=Number(localStorage.getItem("tm-volume")||70);
 let audioContext=null, analyser=null, micStream=null, micRunning=false, pitchLoop=null, lastInTune=false;
 const tunedStrings = new Set();
-const tuneFrames = Object.create(null);
 let selectedString="E2", currentAccent=1;
 const guitarStringFreqs = {"E2":82.4069,"A2":110.0000,"D3":146.8324,"G3":195.9977,"B3":246.9417,"E4":329.6276};
 const guitarStringMidi = {"E2":40,"A2":45,"D3":50,"G3":55,"B3":59,"E4":64};
@@ -55,16 +54,14 @@ function updatePitch(){
   let displayNote, targetFreq, cents;
   if(guitar){
    selectedString=guitar.name;
-   for(const name of Object.keys(guitarStringFreqs)){if(name!==guitar.name)tuneFrames[name]=0;}
+   
    displayNote=guitar.name;
    targetFreq=guitarStringFreqs[guitar.name];
    cents=Math.round(1200*Math.log2(pitch/targetFreq));
     // Mark after several in-tune readings; remove the mark immediately when out of tune.
     if(Math.abs(cents)<=precision){
-     tuneFrames[guitar.name]=(tuneFrames[guitar.name]||0)+1;
-     if(tuneFrames[guitar.name]>=8)tunedStrings.add(guitar.name);
+     tunedStrings.add(guitar.name);
     }else{
-     tuneFrames[guitar.name]=0;
      tunedStrings.delete(guitar.name);
     }
     updateStringIndicators(guitar.name);
@@ -83,6 +80,9 @@ function updatePitch(){
   $("#cents-badge").textContent=(cents>0?"+":"")+cents+" "+t("cents");
   $("#needle").style.transform=`rotate(${Math.max(-48,Math.min(48,cents*.9))}deg)`;
   const inTune=Math.abs(cents)<=precision;
+   const tunerVisible=$("#screen-tuner")?.classList.contains("active");
+   document.body.classList.toggle("tuner-edge-good",!!tunerVisible&&inTune);
+   document.body.classList.toggle("tuner-edge-bad",!!tunerVisible&&!inTune);
   $("#tuning-status").innerHTML=`<span class="status-dot" style="background:${inTune?"var(--green)":"var(--accent)"}"></span><span>${inTune?t("perfect"):Math.abs(cents)<=5?t("almost"):(cents<0?"↓ ":"↑ ")+(Math.abs(cents)+" "+t("cents"))}</span>`;
   $("#note").style.color=inTune?"var(--green)":"var(--text)";
   if(inTune&&!lastInTune)playSuccessChime();
@@ -96,7 +96,7 @@ function updatePitch(){
 }
 function playSuccessChime(){try{const c=audioContext||new(window.AudioContext||window.webkitAudioContext)();const o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.setValueAtTime(523.25,c.currentTime);o.frequency.setValueAtTime(659.25,c.currentTime+.08);g.gain.setValueAtTime(.1,c.currentTime);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.28);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.29)}catch(e){}}
 $("#start-btn").addEventListener("click",async()=>{if(micRunning){stopMic();return}try{audioContext=audioContext||new(window.AudioContext||window.webkitAudioContext)();await audioContext.resume();micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});analyser=audioContext.createAnalyser();analyser.fftSize=4096;audioContext.createMediaStreamSource(micStream).connect(analyser);micRunning=true;$("#start-btn").classList.add("is-active");applyLanguage();$(".live-dot span").textContent="LIVE";updatePitch()}catch(e){toast(t("microphoneError"));if(e.name==="NotAllowedError")setTimeout(()=>toast(t("permission")),500)}});
-function stopMic(){micRunning=false;clearTimeout(pitchLoop);for(const k of Object.keys(tuneFrames))tuneFrames[k]=0;if(micStream)micStream.getTracks().forEach(x=>x.stop());micStream=null;analyser=null;$("#start-btn").classList.remove("is-active");$(".live-dot span").textContent=t("ready");applyLanguage()}
+function stopMic(){document.body.classList.remove("tuner-edge-good","tuner-edge-bad");micRunning=false;clearTimeout(pitchLoop);if(micStream)micStream.getTracks().forEach(x=>x.stop());micStream=null;analyser=null;$("#start-btn").classList.remove("is-active");$(".live-dot span").textContent=t("ready");applyLanguage()}
 $("#calibration-shortcut").onclick=()=>openSetting("calibration");
 $$("[data-ref]").forEach(b=>b.addEventListener("click",()=>setReference(Number(b.dataset.ref))));
 function setReference(v){refA=v;localStorage.setItem("tm-ref",v);$$("[data-ref]").forEach(b=>b.classList.toggle("selected",Number(b.dataset.ref)===v));applyLanguage();toast("A4 = "+v+" Hz")}

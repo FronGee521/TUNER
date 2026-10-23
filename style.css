@@ -102,3 +102,10 @@ body.light .icon-btn,body.light .back-btn{background:var(--surface2);border-colo
 #settings-open [data-icon],#settings-open svg{display:block;width:21px;height:21px}
 #settings-open svg{stroke-width:1.8}
 .string-tools-row{margin-top:10px}
+
+/* Subtle screen-edge feedback while tuning */
+body.tuner-edge-good::after, body.tuner-edge-bad::after {
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:999; border:3px solid transparent;
+}
+body.tuner-edge-good::after { border-color:#42d99a; box-shadow:inset 0 0 30px 5px #42d99a30, inset 0 0 90px 10px #42d99a18; }
+body.tuner-edge-bad::after { border-color:#ff6675; box-shadow:inset 0 0 28px 4px #ff66752b, inset 0 0 80px 8px #ff667514; }
